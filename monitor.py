@@ -98,8 +98,8 @@ async def login_and_get_slots():
 
         # ── Navigate to login page ────────────────────────────────────────────
         log.info("Navigating to login page...")
-        try:await page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60_000)
-            
+        try:
+            await page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60_000)
         except Exception as e:
             raise SiteDownError(f"Could not reach login page at all: {e}")
 
@@ -113,14 +113,14 @@ async def login_and_get_slots():
 
         # ── CHECK 2: Login form must be present ───────────────────────────────
         try:
-            await page.wait_for_selector("select", timeout=10_000)
+            await page.wait_for_selector("select", timeout=15_000)
             selects = await page.query_selector_all("select")
             if selects:
                 await selects[0].select_option(label=SCHOLARSHIP_CATEGORY)
                 log.info("Selected category: %s", SCHOLARSHIP_CATEGORY)
         except Exception:
             raise SiteDownError(
-                "Login form did not load — dropdown not found within 10 seconds. "
+                "Login form did not load — dropdown not found within 15 seconds. "
                 "Site is likely down or returning an incomplete page."
             )
 
@@ -151,11 +151,11 @@ async def login_and_get_slots():
         log.info("Login submitted, waiting for calendar...")
 
         try:
-            await page.wait_for_url("**/calendar**", timeout=20_000)
+            await page.wait_for_url("**/calendar**", timeout=45_000)
         except PWTimeout:
             await page.goto(CALENDAR_URL, wait_until="domcontentloaded", timeout=60_000)
 
-        await page.wait_for_load_state("networkidle", timeout=20_000)
+        await page.wait_for_load_state("domcontentloaded", timeout=45_000)
         current_url = page.url
         log.info("Landed on: %s", current_url)
 
