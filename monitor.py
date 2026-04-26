@@ -8,6 +8,9 @@ import sys
 import asyncio
 import logging
 from datetime import datetime
+import zoneinfo
+
+PHT = zoneinfo.ZoneInfo("Asia/Manila")
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -166,6 +169,22 @@ async def login_and_get_slots():
                 "or the site rejected the login."
             )
 
+        # ── CHECK 3b: Cloudflare challenge detected — wait for it to resolve ─────────────
+        if "__cf_chl" in current_url:
+            log.info("Cloudflare challenge detected — waiting up to 20s for it to resolve...")
+            for _ in range(10):
+                await page.wait_for_timeout(2_000)
+                current_url = page.url
+                if "__cf_chl" not in current_url:
+                    log.info("Cloudflare challenge resolved. Now on: %s", current_url)
+                    break
+            else:
+                raise SiteDownError(
+                    "Cloudflare challenge did not resolve after 20s. "
+                    "GitHub's server IP may be blocked by the MSD site."
+                )
+
+
         # ── CHECK 4: Calendar page must not be an error page ──────────────────
         cal_text = await page.evaluate("() => document.body ? document.body.innerText.toLowerCase() : ''")
         if any(marker in cal_text for marker in SITE_DOWN_MARKERS):
@@ -305,7 +324,7 @@ async def login_and_get_slots():
 def format_slots_message(slots: list) -> str:
     lines = [
         "🔔 <b>MSD Schedule Alert!</b>",
-        f"Checked: {datetime.now().strftime('%b %d, %Y %I:%M %p')}",
+        f"Checked: {datetime.now(PHT).strftime('%b %d, %Y %I:%M %p')}",
         "",
         f"✅ <b>{len(slots)} open slot(s) found!</b>",
         "",
@@ -321,7 +340,7 @@ def format_slots_message(slots: list) -> str:
 
 
 def format_error_message(error_type: str, detail: str) -> str:
-    now = datetime.now().strftime('%b %d, %Y %I:%M %p')
+    now = datetime.now(PHT).strftime('%b %d, %Y %I:%M %p')
     if error_type == "site_down":
         return (
             f"⚠️ <b>MSD Monitor — Site Down</b>\n"
@@ -350,7 +369,7 @@ def format_error_message(error_type: str, detail: str) -> str:
 async def main():
     validate_env()
     log.info("=" * 50)
-    log.info("MSD Monitor starting — %s", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    log.info("MSD Monitor starting — %s", datetime.now(PHT).strftime("%Y-%m-%d %H:%M:%S"))
 
     try:
         slots, total_headers, forced_open = await login_and_get_slots()
