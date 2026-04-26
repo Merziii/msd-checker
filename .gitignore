@@ -1,0 +1,14 @@
+# Never commit real credentials
+.env
+ 
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+ 
+# Local log file (Actions uses live console output instead)
+monitor.log
+ 
+# Virtual environment
+venv/
+.venv/
