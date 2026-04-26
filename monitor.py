@@ -154,11 +154,11 @@ async def login_and_get_slots():
         log.info("Login submitted, waiting for calendar...")
 
         try:
-            await page.wait_for_url("**/calendar**", timeout=45_000)
+            await page.wait_for_url("**/calendar**", timeout=60_000)
         except PWTimeout:
             await page.goto(CALENDAR_URL, wait_until="domcontentloaded", timeout=60_000)
 
-        await page.wait_for_load_state("domcontentloaded", timeout=45_000)
+        await page.wait_for_load_state("domcontentloaded", timeout=60_000)
         current_url = page.url
         log.info("Landed on: %s", current_url)
 
@@ -198,7 +198,7 @@ async def login_and_get_slots():
             )
 
         log.info("Login and page load verified successfully.")
-        await page.wait_for_timeout(4_000)
+        await page.wait_for_timeout(9_000)
 
         # ── Step 1: Force-expand ALL collapse divs directly via JS ────────────
         expanded = await page.evaluate(r"""
