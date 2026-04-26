@@ -3,7 +3,6 @@ name: MSD Schedule Monitor
 on:
   schedule:
     # Philippine Time (UTC+8): 6:00 AM to 9:00 PM = UTC 10:00 PM to 1:00 PM
-    # Runs every hour from 10 PM UTC to 13:00 UTC (6 AM–9 PM PHT)
     - cron: '0 22-23 * * *'   # 6:00 AM – 7:00 AM PHT
     - cron: '0 0-13 * * *'    # 8:00 AM – 9:00 PM PHT
 
@@ -17,15 +16,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.6.0
         with:
           python-version: '3.11'
 
       - name: Cache pip packages
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
